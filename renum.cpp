@@ -1,4 +1,4 @@
-﻿// renum.cpp --- Renumber BASIC program lines
+﻿// renum.cpp --- Renumber BASIC program lines by katahiromz
 // License: MIT
 #include "renum.h"
 #include <vector>

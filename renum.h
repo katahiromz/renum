@@ -1,4 +1,4 @@
-// renum.h --- Renumber BASIC program lines
+// renum.h --- Renumber BASIC program lines by katahiromz
 // License: MIT
 
 #pragma once
