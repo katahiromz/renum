@@ -25,7 +25,7 @@ Options:
 ## Example
 
 ```cmd
-renum -i program.bas -o new_program.bas --start 100 --step 20
+renum -i program.bas -o new_program.bas --new-start 100 --step 20
 ```
 
 ## Key Features
