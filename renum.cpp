@@ -12,7 +12,7 @@
 
 void RENUM_version(void)
 {
-    std::printf("renum Version 0.9 by katahiromz\n");
+    std::printf("renum Version 1.0 by katahiromz\n");
 }
 
 void RENUM_usage(void)
@@ -430,12 +430,14 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
         case RT_THEN:
         case RT_ELSE:
             expect_lineno = true;
+            gosub_goto = false;
             break;
         case RT_DELETE:
         case RT_LIST:
         case RT_LLIST:
             expect_lineno = true;
             range = true;
+            gosub_goto = false;
             break;
         case RT_MINUS:
             if (range)
