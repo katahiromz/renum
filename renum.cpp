@@ -446,6 +446,7 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
         case RT_COMMENT:
         case RT_REM:
             comment = true;
+            gosub_goto = false;
             break;
         case RT_COMMA:
             if (gosub_goto)
@@ -457,7 +458,10 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
             break;
         case RT_MAX:
             if (!vsk_is_lineno(word))
+            {
+                gosub_goto = false;
                 range = false;
+            }
             break;
         }
 
