@@ -12,6 +12,7 @@ Options:
   -o FILE                  The output file (default: output.bas)
   --start LINE_NUMBER      The starting line number (default: 10)
   --step  LINE_NUMBER      The step between line numbers (default: 10)
+  --force                  Force even if there is an invalid line number
   --help                   Display this message
   --version                Display version information
 

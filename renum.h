@@ -19,4 +19,4 @@ void RENUM_version(void);
 void RENUM_usage(void);
 
 renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start = RENUM_LINENO_START, renum_lineno_t step = RENUM_LINENO_STEP);
-renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start = RENUM_LINENO_START, renum_lineno_t step = RENUM_LINENO_STEP);
+renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start = RENUM_LINENO_START, renum_lineno_t step = RENUM_LINENO_STEP, bool force = false);
