@@ -70,7 +70,7 @@ inline bool vsk_is_lineno(const std::string& str)
 enum RENUM_TOKEN
 {
 #define DEFINE_TOKEN(id, str) id,
-#include "tokens.h"
+#include "renum-tokens.h"
 #undef DEFINE_TOKEN
     RT_MAX
 };
@@ -79,7 +79,7 @@ enum RENUM_TOKEN
 RENUM_TOKEN RENUM_word2token(const std::string& word)
 {
 #define DEFINE_TOKEN(id, str) if (word == str) return id;
-#include "tokens.h"
+#include "renum-tokens.h"
 #undef DEFINE_TOKEN
     return RT_MAX;
 }
