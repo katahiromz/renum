@@ -12,7 +12,7 @@
 
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.1.2 by katahiromz\n");
+    std::printf("renum Version 1.1.4 by katahiromz\n");
 }
 
 void RENUM_usage(void)
@@ -66,9 +66,9 @@ enum RENUM_TOKEN
     RT_MAX
 };
 
-RENUM_TOKEN RENUM_word2token(const char *token)
+RENUM_TOKEN RENUM_word2token(const std::string& token)
 {
-#define DEFINE_TOKEN(id, str) if (std::strcmp(token, str) == 0) return id;
+#define DEFINE_TOKEN(id, str) if (token == str) return id;
 #include "tokens.h"
 #undef DEFINE_TOKEN
     return RT_MAX;
@@ -351,7 +351,7 @@ renum_error_t RENUM_save_file(const std::string& filename, const std::string& te
     return 0;
 }
 
-renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start = 10, renum_lineno_t step = 10)
+renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start, renum_lineno_t step)
 {
     mstr_trim_right(text, " \t\r\n");
 
@@ -381,9 +381,11 @@ renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start = 1
     return 0;
 }
 
-bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, renum_lineno_t old_line_no)
+bool RENUM_renumber_one_line(const VskLineNoMap& old_to_new_line, std::string& line, renum_lineno_t old_line_no)
 {
-    auto new_line_no = old_to_new_line[old_line_no];
+    auto it0 = old_to_new_line.find(old_line_no);
+    assert(it0 != old_to_new_line.end());
+    auto new_line_no = it0->second;
 
     RENUM_Tokenizer tokenizer(line);
 
@@ -406,8 +408,7 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
         }
 
         bool expected_label = expect_label;
-        expect_label = false;
-        expect_lineno = false;
+        expect_label = expect_lineno = false;
         auto token = RENUM_word2token(word.c_str());
         switch (token)
         {
@@ -416,15 +417,11 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
         case RT_TO:
         case RT_SUB:
             if (went)
-            {
-                expect_lineno = true;
-                gosub_goto = true;
-            }
+                expect_lineno = gosub_goto = true;
             break;
         case RT_GOTO:
         case RT_GOSUB:
-            expect_lineno = true;
-            gosub_goto = true;
+            expect_lineno = gosub_goto = true;
             break;
         case RT_RESUME:
         case RT_EDIT:
@@ -440,8 +437,7 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
         case RT_DELETE:
         case RT_LIST:
         case RT_LLIST:
-            expect_lineno = true;
-            range = true;
+            expect_lineno = range = true;
             gosub_goto = false;
             break;
         case RT_MINUS:
@@ -458,8 +454,7 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
                 expect_lineno = true;
             break;
         case RT_COLON:
-            gosub_goto = false;
-            range = false;
+            gosub_goto = range = false;
             break;
         case RT_ASTERISK:
             expect_label = true;
@@ -536,21 +531,18 @@ renum_error_t RENUM_parse_cmdline(RENUM& renum, int argc, char **argv)
 
     for (int iarg = 1; iarg < argc; ++iarg)
     {
-        auto arg = argv[iarg];
-        if (std::strcmp(arg, "--help") == 0 || std::strcmp(arg, "/?") == 0)
+        std::string arg = argv[iarg];
+        if (arg == "--help" || arg == "/?")
         {
             RENUM_usage();
             return -1;
         }
-        if (std::strcmp(arg, "--version") == 0)
+        if (arg == "--version")
         {
             RENUM_version();
             return -1;
         }
-        if (std::strcmp(arg, "-i") == 0 ||
-            std::strcmp(arg, "-o") == 0 ||
-            std::strcmp(arg, "--start") == 0 ||
-            std::strcmp(arg, "--step") == 0)
+        if (arg == "-i" || arg == "-o" || arg == "--start" || arg == "--step")
         {
             if (iarg + 1 < argc)
             {
@@ -560,11 +552,11 @@ renum_error_t RENUM_parse_cmdline(RENUM& renum, int argc, char **argv)
             }
             else
             {
-                std::fprintf(stderr, "renum: error: No operand for argument '&s'\n", arg);
+                std::fprintf(stderr, "renum: error: No operand for argument '%s'\n", arg.c_str());
                 return 1;
             }
         }
-        std::fprintf(stderr, "renum: error: invalid argument '%s'\n", arg);
+        std::fprintf(stderr, "renum: error: invalid argument '%s'\n", arg.c_str());
         return 1;
     }
 
