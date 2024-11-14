@@ -265,7 +265,7 @@ void RENUM_tokenizer_tests(void)
     }
 }
 
-renum_lineno_t vsk_line_number_from_line_text(const std::string& line, char **endptr = nullptr)
+renum_lineno_t RENUM_line_number_from_line_text(const std::string& line, char **endptr = nullptr)
 {
     if (line.empty())
         return 0;
@@ -277,7 +277,7 @@ renum_lineno_t vsk_line_number_from_line_text(const std::string& line, char **en
     return renum_lineno_t(number);
 }
 
-void vsk_sort_by_line_numbers(std::string& text)
+void RENUM_sort_by_line_numbers(std::string& text)
 {
     mstr_trim_right(text, " \t\r\n");
 
@@ -285,8 +285,8 @@ void vsk_sort_by_line_numbers(std::string& text)
     mstr_split(lines, text, "\n");
 
     std::sort(lines.begin(), lines.end(), [](const std::string& line0, const std::string& line1){
-        auto number0 = vsk_line_number_from_line_text(line0);
-        auto number1 = vsk_line_number_from_line_text(line1);
+        auto number0 = RENUM_line_number_from_line_text(line0);
+        auto number1 = RENUM_line_number_from_line_text(line1);
         return number0 < number1;
     });
 
@@ -365,7 +365,7 @@ renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start = 1
         if (line.empty())
             line = "'";
 
-        auto number = vsk_line_number_from_line_text(line);
+        auto number = RENUM_line_number_from_line_text(line);
         if (number)
         {
             std::fprintf(stderr, "renum: error: Line number already exists at %ld\n", number);
@@ -394,7 +394,7 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
 
         if (expect_lineno && vsk_is_lineno(word))
         {
-            auto number = vsk_line_number_from_line_text(word);
+            auto number = RENUM_line_number_from_line_text(word);
             auto it = old_to_new_line.find(number);
             if (it == old_to_new_line.end() && number != 0)
                 return false;
@@ -487,7 +487,7 @@ renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renu
     for (auto& line : lines)
     {
         mstr_trim_right(line, " \t\r\n");
-        auto old_line_no = vsk_line_number_from_line_text(line);
+        auto old_line_no = RENUM_line_number_from_line_text(line);
         if (old_line_no <= 0)
         {
             std::fprintf(stderr, "renum: error: Invalid line number\n");
@@ -501,7 +501,7 @@ renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renu
     for (auto& line : lines)
     {
         char *endptr;
-        auto old_line_no = vsk_line_number_from_line_text(line, &endptr);
+        auto old_line_no = RENUM_line_number_from_line_text(line, &endptr);
         line = endptr;
 
         if (!RENUM_renumber_one_line(old_to_new_line, line, old_line_no))
@@ -610,9 +610,9 @@ renum_error_t RENUM_renum(RENUM& renum)
     if (error)
         return error;
 
-    vsk_sort_by_line_numbers(text);
+    RENUM_sort_by_line_numbers(text);
 
-    renum_lineno_t first_lineno = vsk_line_number_from_line_text(text, nullptr);
+    renum_lineno_t first_lineno = RENUM_line_number_from_line_text(text, nullptr);
     if (first_lineno == 0)
     {
         error = RENUM_add_line_numbers(text, renum.m_start_lineno, renum.m_step);
