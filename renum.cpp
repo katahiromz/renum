@@ -1,4 +1,4 @@
-﻿// renum.cpp --- Renumber BASIC program lines by katahiromz
+// renum.cpp --- Renumber BASIC program lines by katahiromz
 // Copyright (C) 2024 Katayama Hirofumi MZ
 // License: MIT
 #include "renum.h"
@@ -10,11 +10,12 @@
 #include <cassert>
 #include "mstr.h"
 #include "encoding.h"
+#include "config.h"
 
 // version info
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.2.3 by katahiromz\n");
+    std::printf("renum Version 1.2.4 by katahiromz\n");
 }
 
 #define RENUM_DEFAULT_OUTPUT "output.bas"
@@ -62,7 +63,7 @@ inline bool vsk_is_lineno(const std::string& str)
         return false;
     for (auto& ch : str)
     {
-        if (!vsk_is_digit(ch))
+        if (!vsk_isdigit(ch))
             return false;
     }
     return true;
@@ -123,7 +124,9 @@ struct RENUM_Tokenizer
     {
         if (m_cch == 0)
             return get_next_word();
-        return vsk_upper(m_str.substr(m_ich, m_cch));
+        auto str = m_str.substr(m_ich, m_cch);
+        vsk_upper(str);
+        return str;
     }
 
     void replace_word(const std::string& new_word)
@@ -138,7 +141,7 @@ struct RENUM_Tokenizer
         while (!is_eof())
         {
             char ch = getch();
-            if (!vsk_is_blank(ch))
+            if (!vsk_isblank(ch))
                 break;
             next();
         }
@@ -162,12 +165,12 @@ struct RENUM_Tokenizer
         ret += ch;
         next();
 
-        if (vsk_is_alpha(ch)) // identifier?
+        if (vsk_isalpha(ch)) // identifier?
         {
             while (!is_eof())
             {
                 ch = getch();
-                if (vsk_is_alnum(ch) || ch == '.')
+                if (vsk_isalnum(ch) || ch == '.')
                     ret += ch;
                 else
                     break;
@@ -175,14 +178,15 @@ struct RENUM_Tokenizer
             }
             m_ich = ich;
             m_cch = ret.size();
-            return vsk_upper(ret);
+            vsk_upper(ret);
+            return ret;
         }
-        else if (vsk_is_digit(ch)) // numeric?
+        else if (vsk_isdigit(ch)) // numeric?
         {
             while (!is_eof())
             {
                 ch = getch();
-                if (vsk_is_digit(ch) || ch == '.')
+                if (vsk_isdigit(ch) || ch == '.')
                     ret += ch;
                 else
                     break;

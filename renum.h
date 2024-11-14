@@ -56,8 +56,3 @@ renum_error_t RENUM_renumber_lines(
 void RENUM_sort_by_line_numbers(std::string& text);
 // get the line number
 renum_lineno_t RENUM_line_number_from_line_text(const std::string& line, char **endptr = nullptr);
-
-// generate error message
-#ifndef RENUM_ERROR_MESSAGE
-    #define RENUM_ERROR_MESSAGE(msg) std::fprintf(stderr, "%s", std::string(msg).c_str())
-#endif

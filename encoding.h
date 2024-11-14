@@ -2,45 +2,41 @@
 // License: MIT
 #pragma once
 
-inline bool vsk_is_upper(char ch)
+inline bool vsk_isupper(char ch)
 {
     return ('A' <= ch && ch <= 'Z');
 }
 
-inline bool vsk_is_lower(char ch)
+inline bool vsk_islower(char ch)
 {
     return ('a' <= ch && ch <= 'z');
 }
 
-inline bool vsk_is_alpha(char ch)
+inline bool vsk_isalpha(char ch)
 {
-    return vsk_is_lower(ch) || vsk_is_upper(ch);
+    return vsk_islower(ch) || vsk_isupper(ch);
 }
 
-inline bool vsk_is_digit(char ch)
+inline bool vsk_isdigit(char ch)
 {
     return ('0' <= ch && ch <= '9');
 }
 
-inline bool vsk_is_alnum(char ch)
+inline bool vsk_isalnum(char ch)
 {
-    return vsk_is_alpha(ch) || vsk_is_digit(ch);
+    return vsk_isalpha(ch) || vsk_isdigit(ch);
 }
 
-inline bool vsk_is_blank(char ch)
+inline bool vsk_isblank(char ch)
 {
     return ch == ' ' || ch == '\t';
 }
 
-inline std::string vsk_upper(const std::string& str)
+inline void vsk_upper(std::string& str)
 {
-    std::string ret;
     for (auto& ch : str)
     {
-        if (vsk_is_lower(ch))
-            ret += ch + ('A' - 'a');
-        else
-            ret += ch;
+        if (vsk_islower(ch))
+            ch += ('A' - 'a');
     }
-    return ret;
 }
