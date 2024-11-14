@@ -25,27 +25,27 @@ Options:
 renum -i program.bas -o new_program.bas --start 100 --step 20
 ```
 
-## Covering statements
+## Covering Statements
 
-(`###` is a line number)
+(`###` represents a line number)
 
 - `GOTO ###`
 - `GOSUB ###`
 - `GO TO ###`
 - `GO SUB ###`
+- `IF ...expr... THEN ### ELSE ###`
+- `ON ...expr... GOTO ###, ###, ...`
+- `ON ...expr... GOSUB ###, ###, ...`
+- `EDIT ###`
 - `DELETE ###`
 - `DELETE ###-`
 - `DELETE -###`
 - `DELETE ###-###`
 - `RESUME ###`
-- `EDIT ###`
 - `RUN ###`
 - `RESTORE ###`
 - `RETURN ###`
 - `AUTO ###`
-- `IF ...expr... THEN ### ELSE ###`
-- `ON ...expr... GOTO ###, ###, ...`
-- `ON ...expr... GOSUB ###, ###, ...`
 
 ## License
 
