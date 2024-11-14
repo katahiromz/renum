@@ -1,3 +1,5 @@
+// Character code-related codes by katahiromz
+// License: MIT
 #pragma once
 
 inline bool vsk_is_upper(char ch)

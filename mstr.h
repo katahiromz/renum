@@ -1,3 +1,5 @@
+// C++ string manipulation by katahiromz
+// License: MIT
 #pragma once
 
 #include <string>
