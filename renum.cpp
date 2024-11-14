@@ -12,8 +12,11 @@
 
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.1.4 by katahiromz\n");
+    std::printf("renum Version 1.1.5 by katahiromz\n");
 }
+
+#define RENUM_DEFAULT_OUTPUT "output.bas"
+#define UTF8_BOM "\xEF\xBB\xBF"
 
 void RENUM_usage(void)
 {
@@ -24,25 +27,23 @@ void RENUM_usage(void)
         "\n"
         "Options:\n"
         "  -i FILE                  The input file\n"
-        "  -o FILE                  The output file (default: output.bas)\n"
-        "  --start LINE_NUMBER      The starting line number (default: 10)\n"
-        "  --step  LINE_NUMBER      The step between line numbers (default: 10)\n"
+        "  -o FILE                  The output file (default: %s)\n"
+        "  --start LINE_NUMBER      The starting line number (default: %d)\n"
+        "  --step  STEP             The step between line numbers (default: %d)\n"
         "  --help                   Display this message\n"
         "  --version                Display version information\n"
         "\n"
-        "Contact: katayama.hirofumi.mz@gmail.com\n"
-    );
+        "Contact: katayama.hirofumi.mz@gmail.com\n",
+        RENUM_DEFAULT_OUTPUT, RENUM_LINENO_START, RENUM_LINENO_STEP);
 }
-
-#define UTF8_BOM "\xEF\xBB\xBF"
 
 typedef std::map<renum_lineno_t, renum_lineno_t> VskLineNoMap;
 
 struct RENUM
 {
     std::map<std::string, std::string> m_options;
-    renum_lineno_t m_start_lineno = 10;
-    renum_lineno_t m_step = 10;
+    renum_lineno_t m_start_lineno = RENUM_LINENO_START;
+    renum_lineno_t m_step = RENUM_LINENO_STEP;
     bool m_bom = false;
 };
 
@@ -523,11 +524,8 @@ renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renu
 
 renum_error_t RENUM_parse_cmdline(RENUM& renum, int argc, char **argv)
 {
-    renum.m_start_lineno = 10;
-    renum.m_step = 10;
-
     renum.m_options.clear();
-    renum.m_options["-o"] = "output.bas";
+    renum.m_options["-o"] = RENUM_DEFAULT_OUTPUT;
 
     for (int iarg = 1; iarg < argc; ++iarg)
     {
