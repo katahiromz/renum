@@ -14,7 +14,7 @@
 // version info
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.2.0 by katahiromz\n");
+    std::printf("renum Version 1.2.1 by katahiromz\n");
 }
 
 #define RENUM_DEFAULT_OUTPUT "output.bas"
@@ -30,13 +30,14 @@ void RENUM_usage(void)
         "Usage: renum [OPTIONS] -i your_file.bas -o output.bas\n"
         "\n"
         "Options:\n"
-        "  -i FILE              Specify the input BASIC file to be renumbered.\n"
-        "  -o FILE              Specify the output file (default: %s).\n"
-        "  --start LINE_NUMBER  Set the starting line number (default: %d).\n"
-        "  --step STEP          Set the increment step between lines (default: %d).\n"
-        "  --force              Force renumbering even if any invalid line number.\n"
-        "  --help               Display this help message and exit.\n"
-        "  --version            Display version information and exit.\n"
+        "  -i FILE                  Specify the input BASIC file to be renumbered.\n"
+        "  -o FILE                  Specify the output file (default: %s).\n"
+        "  --new-start LINE_NUMBER  Set the new starting line number (default: %d).\n"
+        "  --old-start LINE_NUMBER  Set the old starting line number (default: 0).\n"
+        "  --step STEP              Set the increment step between lines (default: %d).\n"
+        "  --force                  Force renumbering even if any invalid line number.\n"
+        "  --help                   Display this help message and exit.\n"
+        "  --version                Display version information and exit.\n"
         "\n"
         "For support or further information, please contact: katayama.hirofumi.mz@gmail.com\n",
         RENUM_DEFAULT_OUTPUT, RENUM_LINENO_START, RENUM_LINENO_STEP);
@@ -47,7 +48,8 @@ typedef std::map<renum_lineno_t, renum_lineno_t> VskLineNoMap;
 struct RENUM
 {
     std::map<std::string, std::string> m_options;
-    renum_lineno_t m_start_lineno = RENUM_LINENO_START;
+    renum_lineno_t m_new_start = RENUM_LINENO_START;
+    renum_lineno_t m_old_start = 0;
     renum_lineno_t m_step = RENUM_LINENO_STEP;
     bool m_bom = false;
     bool m_force = false;
@@ -369,7 +371,12 @@ renum_error_t RENUM_save_file(const std::string& filename, const std::string& te
 }
 
 // insert line numbers to each top of lines
-renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start, renum_lineno_t step, bool force)
+renum_error_t
+RENUM_add_line_numbers(
+    std::string& text,
+    renum_lineno_t start,
+    renum_lineno_t step,
+    bool force)
 {
     // trim the space of right side
     mstr_trim_right(text, " \t\r\n");
@@ -409,10 +416,16 @@ renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start, re
 }
 
 // renumber a line
-bool RENUM_renumber_one_line(const VskLineNoMap& old_to_new_line, std::string& line, renum_lineno_t old_line_no, bool force = false)
+bool
+RENUM_renumber_one_line(
+    const VskLineNoMap& old_to_new_line,
+    std::string& line,
+    renum_lineno_t old_line_no,
+    bool force = false)
 {
     auto it0 = old_to_new_line.find(old_line_no);
-    assert(it0 != old_to_new_line.end());
+    if (it0 == old_to_new_line.end())
+        return force;
     auto new_line_no = it0->second;
 
     RENUM_Tokenizer tokenizer(line);
@@ -515,7 +528,13 @@ bool RENUM_renumber_one_line(const VskLineNoMap& old_to_new_line, std::string& l
     return true;
 }
 
-renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renum_lineno_t step, bool force)
+renum_error_t
+RENUM_renumber_lines(
+    std::string& text,
+    renum_lineno_t new_start,
+    renum_lineno_t old_start,
+    renum_lineno_t step,
+    bool force)
 {
     // trim the space of right side
     mstr_trim_right(text, " \t\r\n");
@@ -526,7 +545,7 @@ renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renu
 
     // create a mapping from old line to new line
     VskLineNoMap old_to_new_line;
-    renum_lineno_t new_line_no = start;
+    renum_lineno_t new_line_no = new_start;
     for (auto& line : lines)
     {
         // trim the space of right side
@@ -542,14 +561,19 @@ renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renu
                 return 1;
             }
         }
-        else
+        else if (old_line_no >= old_start)
         {
             // update the mapping
             old_to_new_line[old_line_no] = new_line_no;
-        }
 
-        // step up
-        new_line_no += step;
+            // step up
+            new_line_no += step;
+        }
+        else
+        {
+            // update the mapping
+            old_to_new_line[old_line_no] = old_line_no;
+        }
     }
 
     // renumber lines
@@ -601,7 +625,10 @@ renum_error_t RENUM_parse_cmdline(RENUM& renum, int argc, char **argv)
             renum.m_force = true;
             continue;
         }
-        if (arg == "-i" || arg == "-o" || arg == "--start" || arg == "--step")
+        if (arg == "-i" || arg == "-o" ||
+            arg == "--old-start" ||
+            arg == "--new-start" ||
+            arg == "--step")
         {
             if (iarg + 1 < argc)
             {
@@ -619,40 +646,52 @@ renum_error_t RENUM_parse_cmdline(RENUM& renum, int argc, char **argv)
         return 1;
     }
 
-    auto it0 = renum.m_options.find("--start");
+    auto it0 = renum.m_options.find("--new-start");
     if (it0 != renum.m_options.end())
     {
         char *endptr;
-        renum.m_start_lineno = std::strtoul(it0->second.c_str(), &endptr, 10);
-        if (*endptr || renum.m_start_lineno <= 0)
+        renum.m_new_start = std::strtoul(it0->second.c_str(), &endptr, 10);
+        if (*endptr || renum.m_new_start < 0)
         {
-            std::fprintf(stderr, "renum: error: start_lineno '%s' is not a positive integer\n", it0->first.c_str());
+            std::fprintf(stderr, "renum: error: --new-start '%s' is not a positive integer\n", it0->first.c_str());
             return 1;
         }
     }
 
-    auto it1 = renum.m_options.find("--step");
+    auto it1 = renum.m_options.find("--old-start");
     if (it1 != renum.m_options.end())
     {
         char *endptr;
-        renum.m_step = std::strtoul(it1->second.c_str(), &endptr, 10);
-        if (*endptr || renum.m_step <= 0)
+        renum.m_old_start = std::strtoul(it1->second.c_str(), &endptr, 10);
+        if (*endptr || renum.m_old_start <= 0)
         {
-            std::fprintf(stderr, "renum: error: step '%s' is not a positive integer\n", it1->first.c_str());
+            std::fprintf(stderr, "renum: error: --old-start '%s' is not a positive integer\n", it1->first.c_str());
             return 1;
         }
     }
 
-    auto it2 = renum.m_options.find("-i");
-    if (it2 == renum.m_options.end())
+    auto it2 = renum.m_options.find("--step");
+    if (it2 != renum.m_options.end())
+    {
+        char *endptr;
+        renum.m_step = std::strtoul(it2->second.c_str(), &endptr, 10);
+        if (*endptr || renum.m_step <= 0)
+        {
+            std::fprintf(stderr, "renum: error: --step '%s' is not a positive integer\n", it2->first.c_str());
+            return 1;
+        }
+    }
+
+    auto it3 = renum.m_options.find("-i");
+    if (it3 == renum.m_options.end())
     {
         std::fprintf(stderr, "renum: error: No input file specified\n");
         RENUM_usage();
         return 1;
     }
 
-    auto it3 = renum.m_options.find("-o");
-    if (it3 == renum.m_options.end())
+    auto it4 = renum.m_options.find("-o");
+    if (it4 == renum.m_options.end())
     {
         std::fprintf(stderr, "renum: error: No output file specified\n");
         RENUM_usage();
@@ -673,7 +712,7 @@ renum_error_t RENUM_renum(RENUM& renum)
     renum_lineno_t first_lineno = RENUM_line_number_from_line_text(text, nullptr);
     if (first_lineno == 0)
     {
-        error = RENUM_add_line_numbers(text, renum.m_start_lineno, renum.m_step);
+        error = RENUM_add_line_numbers(text, renum.m_new_start, renum.m_step);
         if (error)
             return error;
     }
@@ -681,7 +720,7 @@ renum_error_t RENUM_renum(RENUM& renum)
     {
         RENUM_sort_by_line_numbers(text);
 
-        error = RENUM_renumber_lines(text, renum.m_start_lineno, renum.m_step, renum.m_force);
+        error = RENUM_renumber_lines(text, renum.m_new_start, renum.m_old_start, renum.m_step, renum.m_force);
         if (error)
             return error;
     }

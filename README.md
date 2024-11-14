@@ -12,13 +12,14 @@ RENUM --- Renumber BASIC Program Lines
 Usage: renum [OPTIONS] -i your_file.bas -o output.bas
 
 Options:
-  -i FILE              Specify the input BASIC file to be renumbered.
-  -o FILE              Specify the output file (default: output.bas).
-  --start LINE_NUMBER  Set the starting line number (default: 10).
-  --step STEP          Set the increment step between lines (default: 10).
-  --force              Force renumbering even if any invalid line number.
-  --help               Display this help message and exit.
-  --version            Display version information and exit.
+  -i FILE                  Specify the input BASIC file to be renumbered.
+  -o FILE                  Specify the output file (default: output.bas).
+  --new-start LINE_NUMBER  Set the new starting line number (default: 10).
+  --old-start LINE_NUMBER  Set the old starting line number (default: 0).
+  --step STEP              Set the increment step between lines (default: 10).
+  --force                  Force renumbering even if any invalid line number.
+  --help                   Display this help message and exit.
+  --version                Display version information and exit.
 ```
 
 ## Example
