@@ -25,7 +25,7 @@ Options:
 renum -i program.bas -o new_program.bas --start 100 --step 20
 ```
 
-## Covering range
+## Covering statements
 
 (`###` is a line number)
 
