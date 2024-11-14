@@ -14,7 +14,7 @@
 // version info
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.2.1 by katahiromz\n");
+    std::printf("renum Version 1.2.2 by katahiromz\n");
 }
 
 #define RENUM_DEFAULT_OUTPUT "output.bas"
@@ -278,7 +278,7 @@ void RENUM_tokenizer_tests(void)
 }
 
 // get the line number
-renum_lineno_t RENUM_line_number_from_line_text(const std::string& line, char **endptr = nullptr)
+renum_lineno_t RENUM_line_number_from_line_text(const std::string& line, char **endptr)
 {
     if (line.empty())
         return 0;

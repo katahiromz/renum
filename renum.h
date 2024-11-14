@@ -51,3 +51,8 @@ renum_error_t RENUM_renumber_lines(
     renum_lineno_t old_start = 0,
     renum_lineno_t step = RENUM_LINENO_STEP,
     bool force = false);
+
+// sort by line numbers
+void RENUM_sort_by_line_numbers(std::string& text);
+// get the line number
+renum_lineno_t RENUM_line_number_from_line_text(const std::string& line, char **endptr = nullptr);
