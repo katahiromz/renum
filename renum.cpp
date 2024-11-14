@@ -35,7 +35,9 @@ void RENUM_usage(void)
         "  --step STEP          Set the increment step between lines (default: %d).\n"
         "  --force              Force renumbering even if any invalid line number.\n"
         "  --help               Display this help message and exit.\n"
-        "  --version            Display version information and exit.\n",
+        "  --version            Display version information and exit.\n"
+        "\n"
+        "For support or further information, please contact: katayama.hirofumi.mz@gmail.com\n",
         RENUM_DEFAULT_OUTPUT, RENUM_LINENO_START, RENUM_LINENO_STEP);
 }
 
