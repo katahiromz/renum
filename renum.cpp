@@ -10,31 +10,32 @@
 #include "mstr.h"
 #include "encoding.h"
 
+// version info
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.1.7 by katahiromz\n");
+    std::printf("renum Version 1.2.0 by katahiromz\n");
 }
 
 #define RENUM_DEFAULT_OUTPUT "output.bas"
 #define UTF8_BOM "\xEF\xBB\xBF"
 
+// how to use
 void RENUM_usage(void)
 {
     std::printf(
+        "\n"
         "RENUM --- Renumber BASIC program lines\n"
         "\n"
         "Usage: renum [OPTIONS] -i your_file.bas -o output.bas\n"
         "\n"
         "Options:\n"
-        "  -i FILE                  The input file\n"
-        "  -o FILE                  The output file (default: %s)\n"
-        "  --start LINE_NUMBER      The starting line number (default: %d)\n"
-        "  --step  STEP             The step between line numbers (default: %d)\n"
-        "  --force                  Force even if there is an invalid line number\n"
-        "  --help                   Display this message\n"
-        "  --version                Display version information\n"
-        "\n"
-        "Contact: katayama.hirofumi.mz@gmail.com\n",
+        "  -i FILE              Specify the input BASIC file to be renumbered.\n"
+        "  -o FILE              Specify the output file (default: %s).\n"
+        "  --start LINE_NUMBER  Set the starting line number (default: %d).\n"
+        "  --step STEP          Set the increment step between lines (default: %d).\n"
+        "  --force              Force renumbering even if any invalid line number.\n"
+        "  --help               Display this help message and exit.\n"
+        "  --version            Display version information and exit.\n",
         RENUM_DEFAULT_OUTPUT, RENUM_LINENO_START, RENUM_LINENO_STEP);
 }
 
@@ -49,6 +50,7 @@ struct RENUM
     bool m_force = false;
 };
 
+// is it a line number?
 inline bool vsk_is_lineno(const std::string& str)
 {
     if (str.empty())
@@ -61,6 +63,7 @@ inline bool vsk_is_lineno(const std::string& str)
     return true;
 }
 
+// tokens
 enum RENUM_TOKEN
 {
 #define DEFINE_TOKEN(id, str) id,
@@ -69,6 +72,7 @@ enum RENUM_TOKEN
     RT_MAX
 };
 
+// convert word to token
 RENUM_TOKEN RENUM_word2token(const std::string& token)
 {
 #define DEFINE_TOKEN(id, str) if (token == str) return id;
@@ -77,6 +81,7 @@ RENUM_TOKEN RENUM_word2token(const std::string& token)
     return RT_MAX;
 }
 
+// The tokenizer
 struct RENUM_Tokenizer
 {
     std::string& m_str;
@@ -268,6 +273,7 @@ void RENUM_tokenizer_tests(void)
     }
 }
 
+// get the line number
 renum_lineno_t RENUM_line_number_from_line_text(const std::string& line, char **endptr = nullptr)
 {
     if (line.empty())
@@ -280,10 +286,13 @@ renum_lineno_t RENUM_line_number_from_line_text(const std::string& line, char **
     return renum_lineno_t(number);
 }
 
+// sort by line numbers
 void RENUM_sort_by_line_numbers(std::string& text)
 {
+    // trim the space of right side
     mstr_trim_right(text, " \t\r\n");
 
+    // split to lines
     std::vector<std::string> lines;
     mstr_split(lines, text, "\n");
 
@@ -293,10 +302,12 @@ void RENUM_sort_by_line_numbers(std::string& text)
         return number0 < number1;
     });
 
-    text = mstr_join(lines, "\n");
+    // join the lines
+    text = std::move(mstr_join(lines, "\n"));
     text += '\n';
 }
 
+// load a text file
 renum_error_t RENUM_load_file(const std::string& filename, std::string& text, bool& bom)
 {
     text.clear();
@@ -331,6 +342,7 @@ renum_error_t RENUM_load_file(const std::string& filename, std::string& text, bo
     return 0;
 }
 
+// save a text file
 renum_error_t RENUM_save_file(const std::string& filename, const std::string& text, bool bom)
 {
     FILE *fout = fopen(filename.c_str(), "w");
@@ -354,36 +366,47 @@ renum_error_t RENUM_save_file(const std::string& filename, const std::string& te
     return 0;
 }
 
-renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start, renum_lineno_t step)
+// insert line numbers to each top of lines
+renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start, renum_lineno_t step, bool force)
 {
+    // trim the space of right side
     mstr_trim_right(text, " \t\r\n");
 
+    // split to lines
     std::vector<std::string> lines;
     mstr_split(lines, text, "\n");
 
     renum_lineno_t line_no = start;
     for (auto& line : lines)
     {
+        // trim the space of right side
         mstr_trim_right(line, " \t\r\n");
         if (line.empty())
             line = "'";
 
+        // get the line number
         auto number = RENUM_line_number_from_line_text(line);
-        if (number > 0)
+        if (number > 0 && !force)
         {
             std::fprintf(stderr, "renum: error: Line number already exists at %ld\n", number);
             return 1;
         }
 
+        // add it to the left side
         line = std::to_string(line_no) + " " + line;
+
+        // step up
         line_no += step;
     }
 
-    text = mstr_join(lines, "\n");
+    // join the lines
+    text = std::move(mstr_join(lines, "\n"));
     text += '\n';
+
     return 0;
 }
 
+// renumber a line
 bool RENUM_renumber_one_line(const VskLineNoMap& old_to_new_line, std::string& line, renum_lineno_t old_line_no, bool force = false)
 {
     auto it0 = old_to_new_line.find(old_line_no);
@@ -392,6 +415,7 @@ bool RENUM_renumber_one_line(const VskLineNoMap& old_to_new_line, std::string& l
 
     RENUM_Tokenizer tokenizer(line);
 
+    // scan the lien string
     bool went = false, range = false, expect_lineno = false, comment = false, gosub_goto = false;
     bool expect_label = false;
     while (!tokenizer.is_eof() && !comment)
@@ -401,16 +425,17 @@ bool RENUM_renumber_one_line(const VskLineNoMap& old_to_new_line, std::string& l
         if (expect_lineno && vsk_is_lineno(word))
         {
             auto number = RENUM_line_number_from_line_text(word);
-            if (number > 0)
+            if (number > 0) // line number?
             {
                 auto it = old_to_new_line.find(number);
-                if (it == old_to_new_line.end())
+                if (it == old_to_new_line.end()) // not found?
                 {
                     if (!force)
                         return false;
                 }
                 else
                 {
+                    // replace line number text
                     tokenizer.replace_word(std::to_string(it->second));
                 }
             }
@@ -483,24 +508,31 @@ bool RENUM_renumber_one_line(const VskLineNoMap& old_to_new_line, std::string& l
         }
     }
 
+    // insert new line number
     line = std::to_string(new_line_no) + " " + line;
     return true;
 }
 
 renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renum_lineno_t step, bool force)
 {
+    // trim the space of right side
     mstr_trim_right(text, " \t\r\n");
 
+    // split to lines
     std::vector<std::string> lines;
     mstr_split(lines, text, "\n");
 
-    renum_lineno_t new_line_no = start;
+    // create a mapping from old line to new line
     VskLineNoMap old_to_new_line;
+    renum_lineno_t new_line_no = start;
     for (auto& line : lines)
     {
+        // trim the space of right side
         mstr_trim_right(line, " \t\r\n");
+
+        // try to get old line number
         auto old_line_no = RENUM_line_number_from_line_text(line);
-        if (old_line_no <= 0)
+        if (old_line_no <= 0) // No line number?
         {
             if (!force)
             {
@@ -510,18 +542,23 @@ renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renu
         }
         else
         {
+            // update the mapping
             old_to_new_line[old_line_no] = new_line_no;
         }
 
+        // step up
         new_line_no += step;
     }
 
+    // renumber lines
     for (auto& line : lines)
     {
+        // get line number and remove it
         char *endptr;
         auto old_line_no = RENUM_line_number_from_line_text(line, &endptr);
         line = endptr;
 
+        // renumber one line and add the line number
         if (!RENUM_renumber_one_line(old_to_new_line, line, old_line_no, force))
         {
             std::fprintf(stderr, "renum: error: Invalid line number at %ld\n", old_line_no);
@@ -529,13 +566,16 @@ renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renu
         }
     }
 
+    // join the lines
     text = std::move(mstr_join(lines, "\n"));
     text += '\n';
+
     return 0;
 }
 
 #ifdef RENUM_EXE
 
+// parse command line
 renum_error_t RENUM_parse_cmdline(RENUM& renum, int argc, char **argv)
 {
     renum.m_options.clear();
@@ -620,6 +660,7 @@ renum_error_t RENUM_parse_cmdline(RENUM& renum, int argc, char **argv)
     return 0;
 }
 
+// the main part of this program / library
 renum_error_t RENUM_renum(RENUM& renum)
 {
     std::string text;
