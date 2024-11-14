@@ -312,7 +312,9 @@ void RENUM_sort_by_line_numbers(std::string& text)
 
     // join the lines
     text = std::move(mstr_join(lines, "\n"));
+#ifdef RENUM_APPEND_NEWLINE
     text += '\n';
+#endif
 }
 
 // load a text file
@@ -414,7 +416,9 @@ RENUM_add_line_numbers(
 
     // join the lines
     text = std::move(mstr_join(lines, "\n"));
+#ifdef RENUM_APPEND_NEWLINE
     text += '\n';
+#endif
 
     return 0;
 }
@@ -601,7 +605,9 @@ RENUM_renumber_lines(
 
     // join the lines
     text = std::move(mstr_join(lines, "\n"));
+#ifdef RENUM_APPEND_NEWLINE
     text += '\n';
+#endif
 
     return 0;
 }
