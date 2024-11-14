@@ -44,16 +44,24 @@ renum -i program.bas -o new_program.bas --start 100 --step 20
 - `IF ...expr... THEN ### ELSE ###`
 - `ON ...expr... GOTO ###, ###, ...`
 - `ON ...expr... GOSUB ###, ###, ...`
+- `AUTO ###`
 - `EDIT ###`
 - `DELETE ###`
 - `DELETE ###-`
 - `DELETE -###`
 - `DELETE ###-###`
+- `LIST ###`
+- `LIST ###-`
+- `LIST ###-###`
+- `LIST -###`
+- `LLIST ###`
+- `LLIST ###-`
+- `LLIST ###-###`
+- `LLIST -###`
 - `RESUME ###`
 - `RUN ###`
 - `RESTORE ###`
 - `RETURN ###`
-- `AUTO ###`
 
 ## License
 
