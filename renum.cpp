@@ -12,7 +12,7 @@
 
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.1 by katahiromz\n");
+    std::printf("renum Version 1.1.1 by katahiromz\n");
 }
 
 void RENUM_usage(void)
@@ -388,6 +388,7 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
     RENUM_Tokenizer tokenizer(line);
 
     bool went = false, range = false, expect_lineno = false, comment = false, gosub_goto = false;
+    bool expect_label = false;
     while (!tokenizer.is_eof() && !comment)
     {
         auto word = tokenizer.get_next_word();
@@ -402,6 +403,8 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
             tokenizer.replace_word(std::to_string(it->second));
         }
 
+        bool expected_label = expect_label;
+        expect_label = false;
         expect_lineno = false;
         auto token = RENUM_word2token(word.c_str());
         switch (token)
@@ -456,8 +459,11 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
             gosub_goto = false;
             range = false;
             break;
+        case RT_ASTERISK:
+            expect_label = true;
+            break;
         case RT_MAX:
-            if (!vsk_is_lineno(word))
+            if (!vsk_is_lineno(word) && !expected_label)
                 gosub_goto = false;
             break;
         }
