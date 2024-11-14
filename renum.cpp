@@ -14,7 +14,7 @@
 // version info
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.2.2 by katahiromz\n");
+    std::printf("renum Version 1.2.3 by katahiromz\n");
 }
 
 #define RENUM_DEFAULT_OUTPUT "output.bas"
@@ -397,7 +397,7 @@ RENUM_add_line_numbers(
         auto number = RENUM_line_number_from_line_text(line);
         if (number > 0 && !force)
         {
-            std::fprintf(stderr, "renum: error: Line number already exists at %ld\n", number);
+            RENUM_ERROR_MESSAGE("Line number already exists at " + std::to_string(number) + "\n");
             return 1;
         }
 
@@ -445,6 +445,7 @@ RENUM_renumber_one_line(
                 auto it = old_to_new_line.find(number);
                 if (it == old_to_new_line.end()) // not found?
                 {
+                    RENUM_ERROR_MESSAGE("Undefined line " + std::to_string(number) + " in " + std::to_string(old_line_no) + "\n");
                     if (!force)
                         return false;
                 }
@@ -546,6 +547,7 @@ RENUM_renumber_lines(
     // create a mapping from old line to new line
     VskLineNoMap old_to_new_line;
     renum_lineno_t new_line_no = new_start;
+    size_t iLine = 1;
     for (auto& line : lines)
     {
         // trim the space of right side
@@ -557,7 +559,7 @@ RENUM_renumber_lines(
         {
             if (!force)
             {
-                std::fprintf(stderr, "renum: error: Invalid line number\n");
+                RENUM_ERROR_MESSAGE("No line number found at line " + std::to_string(iLine) + "\n");
                 return 1;
             }
         }
@@ -574,6 +576,8 @@ RENUM_renumber_lines(
             // update the mapping
             old_to_new_line[old_line_no] = old_line_no;
         }
+
+        ++iLine;
     }
 
     // renumber lines
@@ -587,7 +591,6 @@ RENUM_renumber_lines(
         // renumber one line and add the line number
         if (!RENUM_renumber_one_line(old_to_new_line, line, old_line_no, force))
         {
-            std::fprintf(stderr, "renum: error: Invalid line number at %ld\n", old_line_no);
             return 1;
         }
     }
