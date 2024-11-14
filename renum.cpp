@@ -12,7 +12,7 @@
 
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.1.5 by katahiromz\n");
+    std::printf("renum Version 1.1.6 by katahiromz\n");
 }
 
 #define RENUM_DEFAULT_OUTPUT "output.bas"
@@ -291,7 +291,7 @@ void RENUM_sort_by_line_numbers(std::string& text)
         return number0 < number1;
     });
 
-    text = std::move(mstr_join(lines, "\n"));
+    text = mstr_join(lines, "\n");
     text += '\n';
 }
 
@@ -367,7 +367,7 @@ renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start, re
             line = "'";
 
         auto number = RENUM_line_number_from_line_text(line);
-        if (number)
+        if (number > 0)
         {
             std::fprintf(stderr, "renum: error: Line number already exists at %ld\n", number);
             return 1;
@@ -377,7 +377,7 @@ renum_error_t RENUM_add_line_numbers(std::string& text, renum_lineno_t start, re
         line_no += step;
     }
 
-    text = std::move(mstr_join(lines, "\n"));
+    text = mstr_join(lines, "\n");
     text += '\n';
     return 0;
 }
@@ -608,8 +608,6 @@ renum_error_t RENUM_renum(RENUM& renum)
     if (error)
         return error;
 
-    RENUM_sort_by_line_numbers(text);
-
     renum_lineno_t first_lineno = RENUM_line_number_from_line_text(text, nullptr);
     if (first_lineno == 0)
     {
@@ -619,6 +617,8 @@ renum_error_t RENUM_renum(RENUM& renum)
     }
     else
     {
+        RENUM_sort_by_line_numbers(text);
+
         error = RENUM_renumber_lines(text, renum.m_start_lineno, renum.m_step);
         if (error)
             return error;
