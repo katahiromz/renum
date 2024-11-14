@@ -25,6 +25,28 @@ Options:
 renum -i program.bas -o new_program.bas --start 100 --step 20
 ```
 
+## Covering range
+
+(`###` is a line number)
+
+- `GOTO ###`
+- `GOSUB ###`
+- `GO TO ###`
+- `GO SUB ###`
+- `DELETE ###`
+- `DELETE ###-`
+- `DELETE -###`
+- `DELETE ###-###`
+- `RESUME ###`
+- `EDIT ###`
+- `RUN ###`
+- `RESTORE ###`
+- `RETURN ###`
+- `AUTO ###`
+- `IF ...expr... THEN ### ELSE ###`
+- `ON ...expr... GOTO ###, ###, ...`
+- `ON ...expr... GOSUB ###, ###, ...`
+
 ## License
 
 - MIT
