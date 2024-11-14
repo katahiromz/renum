@@ -1,4 +1,5 @@
 ﻿// renum.cpp --- Renumber BASIC program lines by katahiromz
+// Copyright (C) 2024 Katayama Hirofumi MZ
 // License: MIT
 #include "renum.h"
 #include <vector>

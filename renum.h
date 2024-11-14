@@ -1,4 +1,5 @@
 // renum.h --- Renumber BASIC program lines by katahiromz
+// Copyright (C) 2024 Katayama Hirofumi MZ
 // License: MIT
 
 #pragma once
