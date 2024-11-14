@@ -2,7 +2,7 @@
 
 ## What's this?
 
-The renum program is a command-line tool designed to renumber the lines in a BASIC program.
+The `renum` program is a command-line tool designed to renumber the lines in a BASIC program.
 It helps organize and manage your BASIC code by systematically updating line numbers,
 making the code easier to read and maintain.
 
