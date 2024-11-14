@@ -75,9 +75,9 @@ enum RENUM_TOKEN
 };
 
 // convert word to token
-RENUM_TOKEN RENUM_word2token(const std::string& token)
+RENUM_TOKEN RENUM_word2token(const std::string& word)
 {
-#define DEFINE_TOKEN(id, str) if (token == str) return id;
+#define DEFINE_TOKEN(id, str) if (word == str) return id;
 #include "tokens.h"
 #undef DEFINE_TOKEN
     return RT_MAX;
@@ -87,8 +87,7 @@ RENUM_TOKEN RENUM_word2token(const std::string& token)
 struct RENUM_Tokenizer
 {
     std::string& m_str;
-    size_t m_ich;
-    size_t m_cch;
+    size_t m_ich, m_cch;
 
     RENUM_Tokenizer(std::string& str) : m_str(str)
     {
