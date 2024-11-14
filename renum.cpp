@@ -511,6 +511,8 @@ renum_error_t RENUM_renumber_lines(std::string& text, renum_lineno_t start, renu
     return 0;
 }
 
+#ifdef RENUM_EXE
+
 renum_error_t RENUM_parse_cmdline(RENUM& renum, int argc, char **argv)
 {
     renum.m_start_lineno = 10;
@@ -622,8 +624,6 @@ renum_error_t RENUM_renum(RENUM& renum)
     error = RENUM_save_file(renum.m_options["-o"], text, renum.m_bom);
     return error;
 }
-
-#ifdef RENUM_EXE
 
 int RENUM_main(int argc, char **argv)
 {
