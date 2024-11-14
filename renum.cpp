@@ -12,7 +12,7 @@
 
 void RENUM_version(void)
 {
-    std::printf("renum Version 0.8 by katahiromz\n");
+    std::printf("renum Version 0.9 by katahiromz\n");
 }
 
 void RENUM_usage(void)
@@ -180,6 +180,20 @@ struct RENUM_Tokenizer
             m_cch = ret.size();
             return ret;
         }
+        else if (ch == '"') // quote?
+        {
+            while (!is_eof())
+            {
+                ch = getch();
+                ret += ch;
+                if (ch == '"')
+                    break;
+                next();
+            }
+            m_ich = ich;
+            m_cch = ret.size();
+            return ret;
+        }
         else
         {
             m_ich = ich;
@@ -205,11 +219,7 @@ void RENUM_tokenizer_tests(void)
         word = tokenizer.get_next_word();
         assert(word == "PRINT");
         word = tokenizer.get_next_word();
-        assert(word == "\"");
-        while (!tokenizer.is_eof() && tokenizer.get_next_word() != "\"")
-        {
-            tokenizer.get_next_word();
-        }
+        assert(word == "\"How do you do?\"");
         word = tokenizer.get_next_word();
         assert(word == "");
     }
@@ -240,6 +250,18 @@ void RENUM_tokenizer_tests(void)
         assert(word == ",");
         word = tokenizer.get_next_word();
         assert(word == "190");
+    }
+    {
+        str = "PRINT \"TEST\", 130";
+        RENUM_Tokenizer tokenizer(str);
+        word = tokenizer.get_next_word();
+        assert(word == "PRINT");
+        word = tokenizer.get_next_word();
+        assert(word == "\"TEST\"");
+        word = tokenizer.get_next_word();
+        assert(word == ",");
+        word = tokenizer.get_next_word();
+        assert(word == "130");
     }
 }
 
@@ -365,8 +387,7 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
 
     RENUM_Tokenizer tokenizer(line);
 
-    bool went = false, range = false, expect_lineno = false, comment = false, quote = false;
-    bool gosub_goto = false;
+    bool went = false, range = false, expect_lineno = false, comment = false, gosub_goto = false;
     while (!tokenizer.is_eof() && !comment)
     {
         auto word = tokenizer.get_next_word();
@@ -423,13 +444,6 @@ bool RENUM_renumber_one_line(VskLineNoMap& old_to_new_line, std::string& line, r
         case RT_COMMENT:
         case RT_REM:
             comment = true;
-            break;
-        case RT_QUOTE:
-            tokenizer.next();
-            while (!tokenizer.is_eof() && tokenizer.getch() != '"')
-            {
-                tokenizer.next();
-            }
             break;
         case RT_COMMA:
             if (gosub_goto)
