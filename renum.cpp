@@ -15,7 +15,7 @@
 // version info
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.2.4 by katahiromz\n");
+    std::printf("renum Version 1.2.5 by katahiromz\n");
 }
 
 #define RENUM_DEFAULT_OUTPUT "output.bas"
