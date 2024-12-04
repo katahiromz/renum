@@ -15,7 +15,7 @@
 // version info
 void RENUM_version(void)
 {
-    std::printf("renum Version 1.2.5 by katahiromz\n");
+    std::printf("renum Version 1.2.6 by katahiromz\n");
 }
 
 #define RENUM_DEFAULT_OUTPUT "output.bas"
@@ -347,6 +347,11 @@ renum_error_t RENUM_load_file(const std::string& filename, std::string& text, bo
             text += buf;
         }
     }
+
+    // Cut '\x1A' and after
+    auto i0 = text.find('\x1A');
+    if (i0 != text.npos)
+        text.erase(i0);
 
     std::fclose(fin);
     return 0;
